@@ -1,0 +1,87 @@
+\documentclass{article}
+
+%% Import configuration file
+\include{sub/conf.tex}
+
+% ---------------------------------------------------------------- %
+
+\begin{document}
+	
+	%% Import cover page
+	\include{sub/coverpage.tex}
+	
+% ---------------------------------------------------------------- %
+
+	%%% Contents & figures page
+	
+	\bigskip\bigskip
+	
+	\tableofcontents
+	
+	\bigskip\bigskip
+	
+	\listoffigures
+
+	\thispagestyle{empty}
+
+% ---------------------------------------------------------------- %
+
+	%%% Report: intro
+	
+	\newpage
+	\setcounter{page}{1}
+	\setcounter{figure}{0}
+	
+	\addcontentsline{toc}{section}{Introduction}
+	
+	%% Import introduction text
+	\include{sub/intro.tex}
+	
+% ---------------------------------------------------------------- %
+
+	%%% Rapport: Configuration du projet (premières séances de TP)
+
+	\newpage
+	
+	% Import project cpnfiguration text
+	\include{sub/proj_config.tex}
+
+% ---------------------------------------------------------------- %
+
+	%%% Rapport: Cahier des charges de l'application
+
+	\newpage
+	
+	% Import app spec text
+	\include{sub/cahier_des_charges.tex}
+	
+% ---------------------------------------------------------------- %
+
+	%%% Rapport: développement de l'application
+	
+	\newpage
+	
+	% Import app development text
+	\include{sub/app.tex}
+		
+% ---------------------------------------------------------------- %
+
+	%%% Report: conclusion
+	
+	\newpage
+	
+	\addcontentsline{toc}{section}{Conclusion}
+	
+	%% Import conclusion text
+	\include{sub/conc.tex}
+	
+% ---------------------------------------------------------------- %
+
+	%%% Rapport: annexes, bibliography et glossaire
+	
+	\newpage
+	
+	%% Import appendixes (+ glossary & bibliography)
+	\include{sub/appendix.tex}
+	
+\end{document}

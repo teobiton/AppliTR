@@ -1,0 +1,70 @@
+%% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.8cm]{geometry}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{xcolor,sectsty}
+\usepackage{hyperref}
+\usepackage{makecell}
+\usepackage{pifont}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{soul}
+\usepackage{listings} 
+\usepackage{multicol}
+\usepackage{array}
+\usepackage{color}
+\usepackage{colortbl}
+\usepackage{booktabs}
+\usepackage[utf8]{inputenc}
+\usepackage{listingsutf8}
+\usepackage{indentfirst}
+
+% New commands
+\newcommand{\gap}{\vspace{5mm}}
+\newcommand{\rhline}{\midrule[0.1mm]}
+
+% Command change
+\setlength{\parindent}{20pt}
+\setcellgapes{4pt}
+
+%% Figures are stored in this relative path
+\graphicspath{ {./img-data/} }
+
+% New colors
+\definecolor{mBlue}{RGB}{50, 83, 220}
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{backgroundColour}{rgb}{0.95,0.95,0.95}
+
+% C style definition to import code
+\lstdefinestyle{CStyle}{
+    language=C,
+    tabsize=4,
+    captionpos=b,
+    numbers=left,
+    commentstyle=\color{mGreen},
+    backgroundcolor=\color{white},
+    numberstyle=\color{gray},
+    keywordstyle=\color{blue} \textbf,%otherkeywords={xdata},
+    keywords=[2]{xdata},
+    keywordstyle=[2]\color{red}\textbf,
+    identifierstyle=\color{black},
+    stringstyle=\color{red}\ttfamily,
+    basicstyle = \ttfamily \color{black} \footnotesize,
+    inputencoding=utf8/latin1,
+    showstringspaces=false,
+    frame=single,
+    morekeywords={uint32_t, uint16_t, uint8_t, inline, state_t,
+    uticks_t, atomic, endatomic, @brief, CTRL_IT_t, ID_IT_t}
+}
+
+%% Font changes (color)
+\subsectionfont{\color{mBlue}}
+\sectionfont{\color{mBlue}}
+
+%% Glossary definition
+\usepackage[record, acronym]{glossaries-extra}
+\setabbreviationstyle[acronym]{long-short} % first occurence long, rest short
+\GlsXtrLoadResources[src={terms}]

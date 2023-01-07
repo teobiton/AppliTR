@@ -1,0 +1,11 @@
+# Files to ignore
+Rapport_ME3_BITON_GOUY.pdf
+temp/
+
+# Extensions to ignore
+*.glstex
+*.aux
+*.lof
+*.log
+*.out
+*.toc

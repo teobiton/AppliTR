@@ -13,7 +13,7 @@ draw_target = $(draw_src:./img-data/%.drawio.svg=./img-data/%.drawio.png)
 ./$(OUT_DIR)/$(SOURCE).aux: *.tex ./sub/* $(draw_target) makefile
 	if [ ! -d "temp/" ]; then mkdir temp;  mkdir temp/sub; fi
 	$(LATEX_CMD)
-#	bibtex ./$(OUT_DIR)/$(SOURCE)
+	bibtex ./$(OUT_DIR)/$(SOURCE)
 # https://www.dickimaw-books.com/software/bib2gls/
 # Java needed to execute
 #	bib2gls ./$(OUT_DIR)/$(SOURCE)

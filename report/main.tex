@@ -1,14 +1,14 @@
 \documentclass{article}
 
 %% Import configuration file
-\include{sub/conf.tex}
+\include{sub/conf}
 
 % ---------------------------------------------------------------- %
 
 \begin{document}
 	
 	%% Import cover page
-	\include{sub/coverpage.tex}
+	\include{sub/coverpage}
 	
 % ---------------------------------------------------------------- %
 
@@ -35,7 +35,7 @@
 	\addcontentsline{toc}{section}{Introduction}
 	
 	%% Import introduction text
-	\include{sub/intro.tex}
+	\include{sub/intro}
 	
 % ---------------------------------------------------------------- %
 
@@ -44,7 +44,7 @@
 	\newpage
 	
 	% Import project cpnfiguration text
-	\include{sub/proj_config.tex}
+	\include{sub/proj_config}
 
 % ---------------------------------------------------------------- %
 
@@ -53,8 +53,27 @@
 	\newpage
 	
 	% Import app spec text
-	\include{sub/cahier_des_charges.tex}
+	\include{sub/cahier_des_charges}
 	
+% ---------------------------------------------------------------- %
+
+	%%% Rapport: réponse aux questions
+	
+	\newpage
+	
+	% Import questions development text
+	\include{sub/questions}
+
+% ---------------------------------------------------------------- %
+
+
+	%%% Rapport: Ressource FreeRTOS
+	
+	\newpage
+	
+	% Import Ressource FreeRTOS
+	\include{sub/freeRTOS}
+
 % ---------------------------------------------------------------- %
 
 	%%% Rapport: développement de l'application
@@ -62,9 +81,11 @@
 	\newpage
 	
 	% Import app development text
-	\include{sub/app.tex}
-		
+	\include{sub/app}
+
 % ---------------------------------------------------------------- %
+
+
 
 	%%% Report: conclusion
 	
@@ -73,7 +94,7 @@
 	\addcontentsline{toc}{section}{Conclusion}
 	
 	%% Import conclusion text
-	\include{sub/conc.tex}
+	\include{sub/conc}
 	
 % ---------------------------------------------------------------- %
 
@@ -82,6 +103,9 @@
 	\newpage
 	
 	%% Import appendixes (+ glossary & bibliography)
-	\include{sub/appendix.tex}
+	\include{sub/appendix}
+
+	\bibliography{bib_AppliTR}{}
+	\bibliographystyle{plain}
 	
 \end{document}

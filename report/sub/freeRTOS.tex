@@ -1,0 +1,112 @@
+\section{Ressource FreeRTOS}
+
+%Une analyse des besoins en éléments de RTOS (tâches, sémaphores, …) requis pour
+%l’implantation de l’application présentée par le paragraphe 1 (Application à
+%développer)
+
+Le noyau FreeRTOS est un système d'exploitation temps réel (RTOS) ciblé pour les microcontrôleurs et petits processeurs.
+Il est distribué sous licence libre MIT.
+Le projet est composé d'un noyau et d'un panel de bibliothèques mises à jour régulièrement.
+Ces dernières réduisent considérablement le "time to market" en fournissant un panel de programmes destiné aux applications industrielles \cite{web_freeRTOS}.
+
+\subsection{Les tâches}
+Une application temps réel basée sur RTOS peut être structurée comme un ensemble de tâches indépendantes. 
+Chaque tâche s'exécute dans son propre contexte sans dépendance avec d'autres tâches du système \cite{web_freeRTOS_task}.
+Une seule tâche de l'application peut être en cours d'exécution à la fois.
+C'est l'ordonnanceur qui décide quelle tâche sélectionner en fonction de nombreux paramètres comme : leur priorité, leur état, les signaux asynchrones d'entré, etc. 
+Dans le programme, une tache est une fonction à exécuter qui contient généralement une boucle infinie.
+Cette fonction a cependant une particularité, elle ne doit jamais atteindre le retour.
+Une tache s'arrête en appelant la procédure \texttt{vTaskDelete( NULL );} alors qu'atteindre la fin de la fonction engendre une exception.
+Le programme ci-dessous est donné par FreeRTOS \cite{web_freeRTOS_task} a titre d'exemple et illustre la structure de la fonction d'une tâche.
+\begin{lstlisting}[style=CStyle]
+    void vATaskFunction( void *pvParameters ) {
+        for( ;; )
+        {
+            -- Task application code here. --
+        }
+        /* Tasks must not attempt to return from their implementing
+        function or otherwise exit. */
+
+        vTaskDelete( NULL );
+    }
+\end{lstlisting}
+Elle respecte un prototype imposé permettant de récupérer des paramètres lors de la création.
+La boucle infinie (facultative) vient ensuite.
+Cet exemple s'attache à mettre en avant la nécessité de supprimer la tache et de ne jamais sortir de la fonction.
+
+Une fois la fonction d'exécution définie, la tâche doit être créée.
+Chaque tâche nécessite de la RAM pour stocker son état et des données comme sa pile. 
+Si une tâche est créée à l'aide de \texttt{xTaskCreate()}, la RAM requise est automatiquement allouée. 
+Si une tâche est créée en utilisant \texttt{xTaskCreateStatic()} alors la RAM est fournie par le développeur de l'application, elle peut donc être allouée statiquement au moment de la compilation.
+La tache est ensuite ajoutée à la liste des taches prêtes à être exécutées.
+Le programme ci-dessous est donné par FreeRTOS \cite{web_freeRTOS_createTask} a titre d'exemple et illustre la création d'une tache.
+\begin{lstlisting}[style=CStyle]
+void Init_function( void ){
+    BaseType_t xReturned;
+    TaskHandle_t xHandle = NULL;
+
+    /* Create the task, storing the handle. */
+    xReturned = xTaskCreate(
+                    vATaskFunction,  /* Function that implements the task. */
+                    "NAME",          /* Text name for the task. */
+                    STACK_SIZE,      /* Stack size in words, not bytes. */
+                    ( void * ) 1,    /* Parameter passed into the task. */
+                    tskIDLE_PRIORITY,/* Priority at which the task is created. */
+                    &xHandle );      /* Used to pass out the created task's handle. */
+    if( xReturned == pdPASS ){
+        /* The task was created.  Use the task's handle to delete the task. */
+        vTaskDelete( xHandle );
+    }
+}
+\end{lstlisting}
+L'intérêt principal de cet exemple est l'utilisation de la fonction \texttt{xTaskCreate} et des paramètres associés.
+On retrouve premièrement un pointeur vers la fonction précédente \texttt{vATaskFunction}, c'est l'adresse de branchement initiale de la tache.
+Vient ensuite le nom, sous forme d'une chaine de caractère, la taille de la pile à allouer, la liste des paramètres à transmettre à la fonction d'exécution, sa priorité et finalement son "identifiant".
+Ce dernier permettra par la suite de supprimer une tâche donnée par exemple.
+La condition suivante est parfois négligée par les développeurs, mais permet d'assurer que tout s'est bien déroulé dans la création.
+Elle est essentielle pour assurer une application robuste.
+Une fois la tâche créée est complètement indépendante est sera appelée par l'ordonnanceur.
+
+\subsection{Sémaphores}
+
+Un sémaphore est une variable ou plus généralement un type de données abstrait utilisé pour synchroniser des tâches ou éviter des problèmes de sections critiques. 
+Son utilisation passe par les deux fonctions atomiques wait() et signal() respectivement remplacées \texttt{xSemaphoreTake} et \texttt{xSemaphoreGive} dans FreeRTOS.
+Ainsi, pour franchir un "wait" il faut nécessairement qu’il soit précédé d’un "signal". Le sémaphore a
+été inventé par Edsger Dijkstra. Il se modélise très bien par un réseau de pétri ce qui facilite sa preuve
+formelle. Il existe deux types de sémaphore binaire et compteur \cite{sem_wiki}.
+
+Dans un sémaphore binaire l’entier le composant ne peut prendre que deux valeurs 0 ou 1. 
+Son fonctionnement est assimilable à un loquet ou le 0 signifie occupé et 1 disponible. 
+Il garantit une exclusion mutuelle entre deux fonctions voulant accéder à une ressource critique. 
+Un sémaphore binaire peut être utilisée pour une \texttt{synchronisation}, la tache endormie aura alors pour seule information si oui ou non des événements ont eu lieu pendant son sommeil. 
+Elle ne saura pas combien. 
+Ce n’est pas un défaut, il faut se poser les bonnes questions en fonction du contexte. 
+Pour créer un sémaphore binaire, il faut faire appel à la fonction \texttt{xSemaphoreCreateBinary}.
+Son prototype est le suivant :
+\begin{lstlisting}[style=CStyle]
+    SemaphoreHandle_t xSemaphoreCreateBinary( void );
+\end{lstlisting}
+Aucun paramètre n'est nécessaire.
+Il conviendra simplement de vérifier que la fonction ne retourne pas \texttt{NULL}.
+
+Dans l'application temps réelle implémentée par la suite nous utiliserons des sémaphores pour fixer la période d'exécution des tâches.
+Il n'est pas nécessaire de vérifier la disponibilité du sémaphore avant de le prendre lors d'une synchronisation.
+Le programme ci-dessous donne un exemple d'utilisation pour \texttt{xSemaphoregive}.
+\begin{lstlisting}[style=CStyle]
+    if( xSemaphore != NULL ) {
+        /* Give a semaphore and control if an error occured */
+        if( xSemaphoreGive( xSemaphore ) != pdTRUE ) {
+           /* pdFALSE if an error occurred */
+        }
+    }    
+\end{lstlisting}
+Un simple appel à la fonction \texttt{xSemaphoreGive} suffi à donner le sémaphore.
+Les conditions ajoutées contribuent à rendre le programme plus robuste en vérifiant si le sémaphore a bien été créé, et si aucune erreur n'est apparue.
+
+L'attente du sémaphore se fait avec la fonction \texttt{xSemaphoreTake}.
+Elle est bloquante et ne peut être franchie que si un jeton (pétri) est disponible.
+Sans cela, la tâche passera dans l'état d'attente (wait).
+Le programme ci-dessous illustre la prise d'un sémaphore.
+\begin{lstlisting}[style=CStyle]
+
+\end{lstlisting}

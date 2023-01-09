@@ -106,7 +106,84 @@ Les conditions ajoutées contribuent à rendre le programme plus robuste en vér
 L'attente du sémaphore se fait avec la fonction \texttt{xSemaphoreTake}.
 Elle est bloquante et ne peut être franchie que si un jeton (pétri) est disponible.
 Sans cela, la tâche passera dans l'état d'attente (wait).
-Le programme ci-dessous illustre la prise d'un sémaphore.
+Le programme ci-dessous illustre la prise d'un sémaphore dans le cas d'une utilisation pour synchronisation.
 \begin{lstlisting}[style=CStyle]
-
+    if( xSemaphore != NULL ) {
+        /* Wait forever a semaphore */
+        xSemaphoreTake(xSemaphore, portMAX_DELAY);
+        /* Do something */
+    }
 \end{lstlisting}
+La fonction est bloquante les lignes suivant le commentaire \textit{Do something} ne pourront être atteint que si une autre tache donne un jeton.
+Le second paramètre permet de spécifier un temps maximum d'attente.
+Le recourt à cette fonctionnalité n'est pas nécessaire dans notre application.
+
+\subsection{Files de message}
+Une file de message est un outil d'ingénierie logiciel communément utilisée pour les communications inter-processus ou inter-processeur.
+Elle se comporte comme une mémoire FIFO où l'entrée est connecté au processus émetteur et la sortie au récepteur.
+Pour établir une communication bidirectionnelle entre deux partis il faudra nécessairement deux files.
+Une file de message peut être vue comme une mémoire tampon entre deux fonctions asynchrone. 
+Dans le cas où la fonction effectuant la lecture s’exécute plus rapidement que celle en lecture la file de message se
+retrouve généralement vide.
+L'API FreeRTOS met à disposition des fonctions pour implémenter des files de messages.
+La première à utiliser est \texttt{xQueueCreate} pour la création.
+Le programme ci-dessous est donné par FreeRTOS \cite{web_freeRTOS_createQueue} a titre d'exemple.
+\begin{lstlisting}[style=CStyle]
+    struct AMessage {
+        char ucMessageID;
+        char ucData[ 20 ];
+    };
+
+    QueueHandle_t xQueue;
+    /* Create a queue capable of containing 10 pointers to AMessage
+    structures.  These are to be queued by pointers as they are
+    relatively large structures. */
+    xQueue = xQueueCreate( 10, sizeof( struct AMessage * ) );
+
+    if( xQueue == NULL ) {
+        /* Queue was not created and must not be used. */
+    }
+\end{lstlisting}
+Ce programme met en évidence la possibilité d'utiliser des messages taille variable.
+Dans ce cas, une structure composée d'un identifiant et d'un tableau d'octet est définie.
+La taille de la file en nombre de messages est fixée à 10.
+Une fois crée l'instance \texttt{xQueue} peut être utilisée.
+La fonction \texttt{xQueueSend} permet de poster un message.
+Le programme ci-dessous est donné par FreeRTOS \cite{web_freeRTOS_queueSend} a titre d'exemple.
+\begin{lstlisting}[style=CStyle]
+if( xQueue != 0 ) {
+    /* Send a pointer to a struct AMessage. Don't block if already full. */
+    pxMessage = &xMessage;
+    xQueueSend( xQueue, ( void * ) &pxMessage, ( TickType_t ) 0 );
+}
+\end{lstlisting}
+On considère un message \texttt{xMessage} affecté au préalable.
+Son adresse est passée en paramètre.
+Le contenu du message est copié à l'appel de \texttt{xQueueSend}, la variable n'as pas besoin d'être statiquement défini.
+Le dernier paramètre offre la possibilité de stipuler un temps maximum d'attente dans le cas ou la file est pleine.
+Dans notre exemple ce cas n'est pas traité, il est toutefois intéressant de savoir que cela est possible.
+La fonction \texttt{xQueueReceive} permet ensuite de récupérer les messages depuis une autre tache.
+Le programme ci-dessous est donné par FreeRTOS \cite{web_freeRTOS_queueReceive} a titre d'exemple.
+\begin{lstlisting}[style=CStyle]
+void vADifferentTask( void *pvParameters ) {
+    struct AMessage xRxedStructure;
+
+   if( xStructQueue != NULL ) {
+      /* Receive a message from the created queue to hold complex struct AMessage
+      structure. The value is read into a struct AMessage variable, so after calling
+      xQueueReceive() xRxedStructure will hold a copy of xMessage. */
+      if( xQueueReceive( xStructQueue, &( xRxedStructure ),
+                          ( TickType_t ) portMAX_DELAY ) == pdPASS ) {
+          /* xRxedStructure now contains a copy of xMessage. */
+      }
+    }
+}
+\end{lstlisting}
+Après l'exécution de la fonction, la variable \texttt{xRxedStructure} contient le message le plus ancien de la file.
+Si la file est vide la fonction est bloquée.
+Il est possible de borner l'attente en spécifiant une valeur en troisième paramètre.
+Dans cet exemple le temps d'attente est maximum.
+
+
+
+

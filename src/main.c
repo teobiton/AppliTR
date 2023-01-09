@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------- 
-						Inclusion des bibliothèques 
+						Inclusion des bibliothï¿½ques 
 -----------------------------------------------------------------------------*/
 #include <asf.h>
 #include <stdio.h> 
@@ -11,7 +11,7 @@
 #include "MesTemps.h"
 #include "oled1.h"
 
-/* Définition de prototypes généraux */
+/* Dï¿½finition de prototypes gï¿½nï¿½raux */
 
 void vSetupHardware(void);
 int8_t get_Entree(void);
@@ -19,14 +19,14 @@ void set_Sortie(int8_t);
 
 /*-----------------------------------------------------------*/
 //! Extension header for the OLED1 Xplained Pro
-#define OLED1_EXT_HEADER  EXT1 // définition de la connection de la carte OLED1 sur l'extension 3 de la carte SAMD21
+#define OLED1_EXT_HEADER  EXT1 // dï¿½finition de la connection de la carte OLED1 sur l'extension 3 de la carte SAMD21
 
 static OLED1_CREATE_INSTANCE(oled1, OLED1_EXT_HEADER);
 
 /*-----------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------- 
-	Déclaration des priorités des tâches 
+	Dï¿½claration des prioritï¿½s des tï¿½ches 
 -----------------------------------------------------------------------------*/ 
 
 #define CLOCK_TASK_PRIORITY ( tskIDLE_PRIORITY +5 ) 
@@ -34,7 +34,7 @@ static OLED1_CREATE_INSTANCE(oled1, OLED1_EXT_HEADER);
 #define SUPERVISION_TASK_PRIORITY ( tskIDLE_PRIORITY +3 )
 #define AFFICHAGE_TASK_PRIORITY ( tskIDLE_PRIORITY +1 )
 
-// Définition de la structure Résultat
+// Dï¿½finition de la structure Rï¿½sultat
 typedef struct {
 	uint16_t periodeObservation;
 	uint16_t MesMin;
@@ -43,20 +43,20 @@ typedef struct {
 } Resultat_t;
 
 /*----------------------------------------------------------------------------- 
-	Déclaration des sémaphores 
+	Dï¿½claration des sï¿½maphores 
 -----------------------------------------------------------------------------*/ 
 
-xSemaphoreHandle xSem_H1=NULL; // Pour réveiller LEDControl
-xSemaphoreHandle xSem_H2=NULL; // Pour réveiller LEDControl
+xSemaphoreHandle xSem_H1=NULL; // Pour rï¿½veiller LEDControl
+xSemaphoreHandle xSem_H2=NULL; // Pour rï¿½veiller LEDControl
 
 /*-----------------------------------------------------------------------------
-	Déclaration de files de message 
+	Dï¿½claration de files de message 
  -----------------------------------------------------------------------------*/ 
 
 xQueueHandle ResultQueue;
 
 /*----------------------------------------------------------------------------- 
-	Déclaration de constantes et de variables globales 
+	Dï¿½claration de constantes et de variables globales 
 -----------------------------------------------------------------------------*/ 
 
 #define HORLOGE_TASK_DELAY 1
@@ -65,9 +65,9 @@ enum mode_t {OBSERVATION_MODE, NORMAL_MODE};
 enum mode_t g_mode = NORMAL_MODE;
 
 /*----------------------------------------------------------------------------- 
-	Déclaration des tâches 
+	Dï¿½claration des tï¿½ches 
 -----------------------------------------------------------------------------*/
-//exemple de déclaration de fonction de tâche: void MaFonction( void * pvParameters ); 
+//exemple de dï¿½claration de fonction de tï¿½che: void MaFonction( void * pvParameters ); 
 
 void vCodeClock( void * pvParameters ); 
 void vCodeObservation( void * pvParameters );
@@ -79,12 +79,12 @@ void vCodeAffichage( void * pvParameters );
 *********************************************************/ 
 
 /************************************************************************ 
-		Déclaration de la fonction d'initialisation matérielle 
+		Dï¿½claration de la fonction d'initialisation matï¿½rielle 
 ************************************************************************/ 
 void vSetupHardware(void) 
 { 
-	system_init();      // Initialisation matérielle 
-	gfx_mono_init();    // Initialisation écran
+	system_init();      // Initialisation matï¿½rielle 
+	gfx_mono_init();    // Initialisation ï¿½cran
 	oled1_init(&oled1); // initialisation de la carte OLED1
 	
 	// reset ecran
@@ -98,7 +98,7 @@ void vSetupHardware(void)
 }
 
 /************************************************************************ 
-		Déclaration des fonctions pour les entrées/sorties
+		Dï¿½claration des fonctions pour les entrï¿½es/sorties
 ************************************************************************/ 
 
 // THE PROBLEM IS HERE
@@ -126,7 +126,7 @@ void set_Sortie(int8_t Sortie) {
 
 int main (void) 
 { 
-	//Initialisation du matériel 
+	//Initialisation du matï¿½riel 
 	vSetupHardware(); 
 	ConfigureMeasure();
 	
@@ -138,12 +138,12 @@ int main (void)
 		 while(1);
 	 }
 	
-	//Création des sémaphores 
+	//Crï¿½ation des sï¿½maphores 
 
 	xSem_H1 = xSemaphoreCreateBinary();
 	xSem_H2 = xSemaphoreCreateBinary();		
 	
-	//Création des tâches 
+	//Crï¿½ation des tï¿½ches 
 
 		xTaskCreate( vCodeClock, ( const char * ) "Clock", 
 	configMINIMAL_STACK_SIZE, NULL, CLOCK_TASK_PRIORITY, NULL ); 
@@ -160,11 +160,11 @@ int main (void)
 
 
 /*************************************** 
-	Déclaration du code des tâches 
+	Dï¿½claration du code des tï¿½ches 
 ****************************************/
 
 /***************************************
-	tâche : Clock 
+	tï¿½che : Clock 
 ****************************************/
 void vCodeClock(void * pvParameters) 
 { 
@@ -177,7 +177,7 @@ void vCodeClock(void * pvParameters)
 }
 
 /*************************************** 
-		code tâche : Supervision 
+		code tï¿½che : Supervision 
 ****************************************/ 
 
 void vCodeSupervison (void * pvParameters){
@@ -198,7 +198,7 @@ void vCodeSupervison (void * pvParameters){
 }
 
 /*************************************** 
-		code tâche : Affichage 
+		code tï¿½che : Affichage 
 ****************************************/ 
 
 void vCodeAffichage (void * pvParameters){
@@ -207,12 +207,12 @@ void vCodeAffichage (void * pvParameters){
 		
 	for(;;){
 		
-	   if( xQueueReceive( ResultQueue,&( resultat ),( TickType_t ) 10 ) == pdPASS )
+	   if( xQueueReceive( ResultQueue,&( resultat ),( TickType_t ) portMAX_DELAY ) == pdPASS )
 	   {
-		    // reset partie droite de l'écran
+		    // reset partie droite de l'ï¿½cran
 			gfx_mono_draw_filled_rect(75, 0, GFX_MONO_LCD_WIDTH, GFX_MONO_LCD_HEIGHT, GFX_PIXEL_CLR);
 		   
-		    // affichage  des résultats sur l'écran
+		    // affichage  des rï¿½sultats sur l'ï¿½cran
 		   	itoa(resultat.MesMin, str_val, 10);
 		   	gfx_mono_draw_string(str_val, 75, 0, &sysfont);
 			itoa(resultat.Moyenne, str_val, 10);
@@ -226,7 +226,7 @@ void vCodeAffichage (void * pvParameters){
 }
 
 /*************************************** 
-		code tâche : Observation 
+		code tï¿½che : Observation 
 ****************************************/ 
 
 void vCodeObservation(void * pvParameters) {
@@ -337,7 +337,7 @@ void vCodeObservation(void * pvParameters) {
 				break;
 		}
 		
-		// Allumage de la LED0 en fonction de l'état
+		// Allumage de la LED0 en fonction de l'ï¿½tat
 		if (Etat == OBSERVE) {
 			port_pin_set_output_level(LED_0_PIN, LED_0_ACTIVE);
 		} else {

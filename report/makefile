@@ -10,7 +10,7 @@ draw_target = $(draw_src:./img-data/%.drawio.svg=./img-data/%.drawio.png)
 #https://unix.stackexchange.com/questions/140912/no-target-error-using-make
 
 # Needed: "latex" and "texlive-bibtex-extra"
-./$(OUT_DIR)/$(SOURCE).aux: *.tex ./sub/* $(draw_target) makefile
+./$(OUT_DIR)/$(SOURCE).aux: *.tex ./sub/* $(draw_target) makefile *.bib
 	if [ ! -d "temp/" ]; then mkdir temp;  mkdir temp/sub; fi
 	$(LATEX_CMD)
 	bibtex ./$(OUT_DIR)/$(SOURCE)

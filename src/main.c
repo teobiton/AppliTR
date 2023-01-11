@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------- 
-						Inclusion des biblioth�ques 
+						Inclusion des bibliothèques 
 -----------------------------------------------------------------------------*/
 #include <asf.h>
 #include <stdio.h> 
@@ -11,7 +11,7 @@
 #include "MesTemps.h"
 #include "oled1.h"
 
-/* D�finition de prototypes g�n�raux */
+/* Définition de prototypes généraux */
 
 void vSetupHardware(void);
 int8_t get_Entree(void);
@@ -19,14 +19,14 @@ void set_Sortie(int8_t);
 
 /*-----------------------------------------------------------*/
 //! Extension header for the OLED1 Xplained Pro
-#define OLED1_EXT_HEADER  EXT1 // d�finition de la connection de la carte OLED1 sur l'extension 3 de la carte SAMD21
+#define OLED1_EXT_HEADER  EXT1 // définition de la connection de la carte OLED1 sur l'extension 3 de la carte SAMD21
 
 static OLED1_CREATE_INSTANCE(oled1, OLED1_EXT_HEADER);
 
 /*-----------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------- 
-	D�claration des priorit�s des t�ches 
+	Déclaration des priorités des tâches 
 -----------------------------------------------------------------------------*/ 
 
 #define CLOCK_TASK_PRIORITY ( tskIDLE_PRIORITY +5 ) 
@@ -34,7 +34,7 @@ static OLED1_CREATE_INSTANCE(oled1, OLED1_EXT_HEADER);
 #define SUPERVISION_TASK_PRIORITY ( tskIDLE_PRIORITY +3 )
 #define AFFICHAGE_TASK_PRIORITY ( tskIDLE_PRIORITY +1 )
 
-// D�finition de la structure R�sultat
+// Définition de la structure Résultat
 typedef struct {
 	uint16_t periodeObservation;
 	uint16_t MesMin;
@@ -43,20 +43,20 @@ typedef struct {
 } Resultat_t;
 
 /*----------------------------------------------------------------------------- 
-	D�claration des s�maphores 
+	Déclaration des sémaphores 
 -----------------------------------------------------------------------------*/ 
 
-xSemaphoreHandle xSem_H1=NULL; // Pour r�veiller LEDControl
-xSemaphoreHandle xSem_H2=NULL; // Pour r�veiller LEDControl
+xSemaphoreHandle xSem_H1=NULL; // Pour réveiller LEDControl
+xSemaphoreHandle xSem_H2=NULL; // Pour réveiller Supervision
 
 /*-----------------------------------------------------------------------------
-	D�claration de files de message 
+	Déclaration de files de message 
  -----------------------------------------------------------------------------*/ 
 
 xQueueHandle ResultQueue;
 
 /*----------------------------------------------------------------------------- 
-	D�claration de constantes et de variables globales 
+	Déclaration de constantes et de variables globales 
 -----------------------------------------------------------------------------*/ 
 
 #define HORLOGE_TASK_DELAY 1
@@ -65,9 +65,9 @@ enum mode_t {OBSERVATION_MODE, NORMAL_MODE};
 enum mode_t g_mode = NORMAL_MODE;
 
 /*----------------------------------------------------------------------------- 
-	D�claration des t�ches 
+	Déclaration des tâches 
 -----------------------------------------------------------------------------*/
-//exemple de d�claration de fonction de t�che: void MaFonction( void * pvParameters ); 
+//exemple de déclaration de fonction de tache: void MaFonction( void * pvParameters ); 
 
 void vCodeClock( void * pvParameters ); 
 void vCodeObservation( void * pvParameters );
@@ -79,17 +79,18 @@ void vCodeAffichage( void * pvParameters );
 *********************************************************/ 
 
 /************************************************************************ 
-		D�claration de la fonction d'initialisation mat�rielle 
+		Déclaration de la fonction d'initialisation matérielle 
 ************************************************************************/ 
 void vSetupHardware(void) 
 { 
-	system_init();      // Initialisation mat�rielle 
-	gfx_mono_init();    // Initialisation �cran
+	system_init();      // Initialisation matérielle 
+	gfx_mono_init();    // Initialisation écran
 	oled1_init(&oled1); // initialisation de la carte OLED1
 	
-	// reset ecran
+	// Reset total de l'écran
 	gfx_mono_draw_filled_rect(0, 0, GFX_MONO_LCD_WIDTH, GFX_MONO_LCD_HEIGHT, GFX_PIXEL_CLR);
 	
+	// Affichage initiale de l'écran au lancement de l'application
 	gfx_mono_draw_string("Temps mini:", 0, 0, &sysfont);
 	gfx_mono_draw_string("Temps moyen:", 0, 7, &sysfont);
 	gfx_mono_draw_string("Temps maxi:", 0, 14, &sysfont);
@@ -98,10 +99,9 @@ void vSetupHardware(void)
 }
 
 /************************************************************************ 
-		D�claration des fonctions pour les entr�es/sorties
+		Déclaration des fonctions pour les entrées/sorties
 ************************************************************************/ 
 
-// THE PROBLEM IS HERE
 int8_t get_Entree(void) {
 	
 	bool BP1, BP2, BP3;
@@ -109,11 +109,13 @@ int8_t get_Entree(void) {
 	BP2 = oled1_get_button_state(&oled1, OLED1_BUTTON2_ID);
 	BP3 = oled1_get_button_state(&oled1, OLED1_BUTTON3_ID);
 	
+	// Entree est comprise entre 0b000 et 0b111
 	return (BP1 | (BP2 << 1) | (BP3 << 2));
 }
 
 void set_Sortie(int8_t Sortie) {
 	
+	// Sortie est comprise entre 0b000 et 0b111
 	oled1_set_led_state(&oled1, OLED1_LED1_ID, Sortie & 0x1);
 	oled1_set_led_state(&oled1, OLED1_LED2_ID, Sortie & (1 << 1));
 	oled1_set_led_state(&oled1, OLED1_LED3_ID, Sortie & (1 << 2));
@@ -126,7 +128,7 @@ void set_Sortie(int8_t Sortie) {
 
 int main (void) 
 { 
-	//Initialisation du mat�riel 
+	//Initialisation du matériel 
 	vSetupHardware(); 
 	ConfigureMeasure();
 	
@@ -138,12 +140,12 @@ int main (void)
 		 while(1);
 	 }
 	
-	//Cr�ation des s�maphores 
+	//Création des sémaphores 
 
 	xSem_H1 = xSemaphoreCreateBinary();
 	xSem_H2 = xSemaphoreCreateBinary();		
 	
-	//Cr�ation des t�ches 
+	//Création des tâches 
 
 		xTaskCreate( vCodeClock, ( const char * ) "Clock", 
 	configMINIMAL_STACK_SIZE, NULL, CLOCK_TASK_PRIORITY, NULL ); 
@@ -160,11 +162,11 @@ int main (void)
 
 
 /*************************************** 
-	D�claration du code des t�ches 
+	Déclaration du code des tâches 
 ****************************************/
 
 /***************************************
-	t�che : Clock 
+	tache : Clock 
 ****************************************/
 void vCodeClock(void * pvParameters) 
 { 
@@ -177,7 +179,7 @@ void vCodeClock(void * pvParameters)
 }
 
 /*************************************** 
-		code t�che : Supervision 
+		code tache : Supervision 
 ****************************************/ 
 
 void vCodeSupervison (void * pvParameters){
@@ -186,9 +188,13 @@ void vCodeSupervison (void * pvParameters){
 	
 	for(;;){
 		
-		xSemaphoreTake(xSem_H2, portMAX_DELAY); 
+		xSemaphoreTake(xSem_H2, portMAX_DELAY);
+
+		// Récupération de la valeur (true ou false) du bouton poussoir 0
 		start_bp_state = port_pin_get_input_level(BUTTON_0_PIN);
-	
+
+		// Les boutons sont en logique négative (bouton appuyé -> false)
+		// Pour démarrer l'application, il faut appuyer sur le bouton poussoir 0
 		if ((prev_start_bp_state == true) && (start_bp_state == false) && (g_mode == NORMAL_MODE)){
 			g_mode = OBSERVATION_MODE;
 		}
@@ -198,7 +204,7 @@ void vCodeSupervison (void * pvParameters){
 }
 
 /*************************************** 
-		code t�che : Affichage 
+		code tache : Affichage 
 ****************************************/ 
 
 void vCodeAffichage (void * pvParameters){
@@ -209,10 +215,10 @@ void vCodeAffichage (void * pvParameters){
 		
 	   if( xQueueReceive( ResultQueue,&( resultat ),( TickType_t ) portMAX_DELAY ) == pdPASS )
 	   {
-		    // reset partie droite de l'�cran
+		    // Reset partie droite de l'écran
 			gfx_mono_draw_filled_rect(75, 0, GFX_MONO_LCD_WIDTH, GFX_MONO_LCD_HEIGHT, GFX_PIXEL_CLR);
 		   
-		    // affichage  des r�sultats sur l'�cran
+		    // Affichage des résultats sur l'écran
 		   	itoa(resultat.MesMin, str_val, 10);
 		   	gfx_mono_draw_string(str_val, 75, 0, &sysfont);
 			itoa(resultat.Moyenne, str_val, 10);
@@ -226,7 +232,7 @@ void vCodeAffichage (void * pvParameters){
 }
 
 /*************************************** 
-		code t�che : Observation 
+		code tache : Observation 
 ****************************************/ 
 
 void vCodeObservation(void * pvParameters) {
@@ -251,9 +257,13 @@ void vCodeObservation(void * pvParameters) {
 	{
 		xSemaphoreTake(xSem_H1, portMAX_DELAY); 
 		
+		// Récupération de l'entrée (appui sur les boutons par l'utilisateur)
 		Entree = get_Entree();
+
+		// Production d'une valeur sur sortie à recopier par l'utilisateur
 		set_Sortie(Sortie);
 		
+		// La période d'observation est mesurée à chaque appel de la tâche
 		resultat.periodeObservation = EndMeasure();
 		StartMeasure();
 		
@@ -288,6 +298,8 @@ void vCodeObservation(void * pvParameters) {
 				if (Entree != Sortie) {
 					T = T + 1;
 				} else if ((Entree == Sortie) && (NbMes == 0)) {
+
+					// Première mesure
 					resultat.MesMin = T;
 					resultat.MesMax = T;
 					Somme = T;
@@ -302,12 +314,16 @@ void vCodeObservation(void * pvParameters) {
 					NbMes = NbMes + 1;
 					fsm_state = ATTENTE_MESURE;
 				} else if ((Entree == Sortie) && (NbMes == NbMesToDO-1)) {
+
+					// Dernière mesure
 					if (T < resultat.MesMin) resultat.MesMin = T;
 					if (T > resultat.MesMax) resultat.MesMax = T;
 					Somme = Somme + T;
 				
 					NbMes = NbMes + 1;
 					resultat.Moyenne = Somme/NbMesToDO;
+
+					// Envoie de la file de message à la tâche Affichage
 					if( xQueueSend( ResultQueue,( void * ) &resultat, ( TickType_t ) 0 ) != pdPASS )
 					{/* Failed to post the message */}
 					fsm_state = FIN_MESURE;
@@ -337,7 +353,7 @@ void vCodeObservation(void * pvParameters) {
 				break;
 		}
 		
-		// Allumage de la LED0 en fonction de l'�tat
+		// Allumage de la LED0 en fonction de l'etat
 		if (Etat == OBSERVE) {
 			port_pin_set_output_level(LED_0_PIN, LED_0_ACTIVE);
 		} else {

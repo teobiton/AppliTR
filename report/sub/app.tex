@@ -2,11 +2,11 @@
 
 L'application finale demandée reprend les éléments de configuration vus en section 2.
 Cette section comporte un récapitulatif des éléments de l'application avec éventuellement des portions de code montrant leur utilisation.
-Un exemple de résultats obtenus après lancement de l'application sont montrés;
+Un exemple de résultats obtenus après lancement de l'application sont montrés.
 
 \subsection{Éléments de l'application}
 
-L'application se base sur la structure fonctionnelle suivante:
+L'application se base sur la structure fonctionnelle suivante :
 
 \begin{figure}[h]
     \centering
@@ -16,7 +16,7 @@ L'application se base sur la structure fonctionnelle suivante:
 \end{figure}
 
 De ce schéma, différentes informations peuvent être extraites.
-Quatre tâches distinctes peuvent être imaginées pour cette application temps-réel:
+Quatre tâches distinctes peuvent être imaginées pour cette application temps-réel :
 
 \begin{itemize}
     \item Horloge
@@ -32,10 +32,10 @@ Les différentes entrées/sorties présentées dans cette structure fonctionnell
 \subsection{Résultat}
 
 L'application peut être testée en programmant la carte.
-L'utilisateur doit appuyer sur le bouton SW0 pour lancer une série de mesure du temps de réaction.
+L'utilisateur doit appuyer sur le bouton SW0 pour lancer une série de mesures du temps de réaction.
 Dans le cadre des résultats montrés ci-dessous, cinq mesures successives sont effectuées avant l'affichage des résultats sur l'écran.
-Les figures suivantes montrent l'affichage de l'écran au lancement de l'application (\ref{fig:start_app}) et à la fin d'une série de mesure (\ref{fig:end_app}).
-Les résultats montrés sont, dans l'ordre:
+Les figures suivantes montrent l'affichage de l'écran au lancement de l'application (\ref{fig:start_app}) et à la fin d'une série de mesures (\ref{fig:end_app}).
+Les résultats montrés sont, dans l'ordre :
 
 \begin{itemize}
     \item Le temps de réaction minimal
@@ -65,11 +65,11 @@ C'est lors de l'initialisation du matériel que cet affichage a lieu.
     \label{fig:end_app}
 \end{figure}
 
-Après une série de mesure, la file de message contenants les résultats est envoyée de la tâche \textit{Observation} à la tâche \textit{Affichage}.
+Après une série de mesures, la file de message contenant les résultats est envoyée de la tâche \textit{Observation} à la tâche \textit{Affichage}.
 Cette file de message contient la variable Résultat, instance de la structure \textit{Resultat\_t} contenant les différentes mesures.
 Après réception de la file de message, la tâche \textit{Affichage} fait apparaître sur l'écran les résultats de la mesure.
 \\\\
 Pour prouver le bon fonctionnement de l'application, une vidéo est proposée dans le même dossier que ce rapport.
 Cette vidéo couvre le démarrage de l'application après un reset. 
-Une série de mesure a lieu, menant à l'affichage des résultats.
-Enfin, l'utilisateur relance une série de mesure après appui sur le bouton SW0.
+Une série de mesures a lieu, menant à l'affichage des résultats.
+Enfin, l'utilisateur relance une série de mesures après appui sur le bouton SW0.

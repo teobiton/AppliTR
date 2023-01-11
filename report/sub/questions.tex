@@ -11,7 +11,50 @@ Pouvez-vous facilement adapter la politique d’ordonnancement ? Quelle(s) proc�
 faudrait-il modifier ?
 
 
-Qu’impliquent les 5 politiques de gestion de la mémoire par FreeRTOS ?
+
+\subsection{Gestion de la mémoire}
+Le noyau du RTOS a besoin de RAM chaque fois qu'une tâche, une file de message, un mutex, un délai logiciel, un sémaphore ou un groupe d'événements est créé. 
+La RAM peut être automatiquement allouée dynamiquement à partir du tas, ou elle peut être fournie par le développeur.
+La question posée est la suivante :
+\textit{Qu’impliquent les 5 politiques de gestion de la mémoire par FreeRTOS ?}
+\gap
+
+FreeRTOS offre plusieurs schémas de gestion du tas qui varient en complexité et en fonctionnalités.
+Il est possible d'utiliser deux politiques de gestion mémoire simultanément.
+Cela permet par exemple, aux piles des tâches et aux autres objets du RTOS d'être placés dans la RAM interne rapide, et aux données de l'application d'être placées dans la RAM externe plus lente \cite{web_freeRTOS_heap}.
+
+\noindent
+\textbf{heap 1} \\
+C'est le fonctionnement le plus simple, il ne permet pas de libérer de la mémoire une fois allouée.
+Malgré cela, il convient à la majorité des applications temps réel.
+En effet, quand les contraintes mémoire sont rudes, il est usuel de déclarer les taches et objets RTOS statiquement au démarrage.
+Le programme de heap 1 divise une zone mémoire en petits blocs.
+La taille globale étant donnée par \texttt{configTOTAL\_HEAP\_SIZE}.
+
+\noindent
+\textbf{heap 2} \\
+Le second mode propose une fonctionnalité supplémentaire, il permet de libérer de la mémoire, mais ne permet pas la fusion de blocs libres adjacents.
+Il peut être utilisé dans le cas où l'application affecte de la mémoire dynamiquement en connaissance des risques.
+En effet, la taille des blocs alloués doit être constante sans quoi la mémoire risque de se fragmenter au cours de l'exécution et finir par causer une erreur d'allocation.
+
+\noindent
+\textbf{heap 3} \\
+Ce mode est bien différent des autres puisqu'il encapsule des fonctions standard \texttt{malloc}() et \texttt{free}().
+L'environnement de compilation doit contenir le code de ces deux fonctions.
+Les inconvénients à cela sont le non-déterminisme de l'exécution et l'occupation mémoire.
+En effet, d'un appel à l'autre le temps d'exéction de \texttt{malloc} et \texttt{free} diffère.
+
+\noindent
+\textbf{heap 4} \\
+Ce schéma s'apparente au heap 2 avec en plus la fusion des blocs libres adjacents pour éviter la fragmentation.
+Cela le rend lui aussi non déterministe.
+Il reste cependant bien plus performant que la plupart des implantations de \texttt{malloc}.
+
+\noindent
+\textbf{heap 5} \\
+Le cinquième est dernier mode de gestion est le plus avancées mis à disposition par FreeRTOS.
+Il propose de la possibilité d'étendre le tas (heap) à travers plusieurs zones de mémoire non adjacentes.
+
 
 % La réponse à la question posée en fin du paragraphe 4.3.
 

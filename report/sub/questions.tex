@@ -76,3 +76,98 @@ Il propose de la possibilité d'étendre le tas (heap) à travers plusieurs zone
 % La réponse à la question posée en fin du paragraphe 4.3.
 
 \textit{Comment faire varier la fréquence de clignotement de la LED ? (plusieurs possibilités)}
+\gap
+
+Il existe plusieurs façons de faire varier la fréquence de clignotement de la LED.
+Certaines solutions ont un impact uniquement sur le clignotement de LED dans la tâche "LEDControl" du programme mainLED\_BP.c donné en annexe.
+D'autres solutions ont un impact sur le fonctionnement générale du système.
+Elles seront donc classées de la plus simple (ou la plus "propre") à mettre en place à la moins judicieuse pour faire varier la fréquence de clignotement de la LED. \\
+La première solution consiste à ajouter un compteur dans la tâche "Clock" et de tester sa valeur, diminuant ainsi la fréquence d'envoi de la sémaphore à la tâche "LEDControl".
+Une implémentation possible est celle-ci:
+
+\begin{lstlisting}[style=CStyle]
+    void vCodeClock(void * pvParameters)
+    {
+        uint8_t cpt = 0;
+
+        for( ;; )
+        {
+            vTaskDelay(HORLOGE_TASK_DELAY);
+            
+            // Fréquence divisée par 2
+            if (cpt == 1) {
+                xSemaphoreGive( xSem_H1);
+                cpt = 0;
+            } else {
+                cpt++;
+            }
+        }
+    }
+\end{lstlisting}
+
+Une deuxième solution consiste à faire varier la constante \textit{HORLOGE\_TASK\_DELAY}.
+Cette constante définit la fréquence de fonctionnement globale de l'ordonnanceur.
+Dans une application avec plus de tâches ou si plus de sémaphores étaient envoyées par la tâche "Clock", modifier cette constante aurait un impact sur les fréquences d'appel des tâches.
+
+\begin{lstlisting}[style=CStyle]
+    // Déclaration de la constante de temps d'attente dans la tâche "Clock"
+    #define HORLOGE_TASK_DELAY 1
+\end{lstlisting}
+
+Dans la même idée, mais d'une façon moins appropriée, il est possible de faire varier la fréquence de clignotement de la LED en rajoutant des appels à la fonction \texttt{vTaskDelay}.
+
+\begin{lstlisting}[style=CStyle]
+    void vCodeClock(void * pvParameters)
+    {
+        for( ;; )
+        {
+            // Deux appels de vTaskDelay divisent par deux la fréquence
+            vTaskDelay(HORLOGE_TASK_DELAY);
+            vTaskDelay(HORLOGE_TASK_DELAY);
+            xSemaphoreGive( xSem_H1);
+        }
+    }
+\end{lstlisting}
+
+Les solutions présentées ci-dessus interviennent directement dans l'application.
+Une autre possibilité cette fois réside dans la modification de l'OS via le fichier FreeRTOSConfig.h.
+Dans ce fichier il est possible de modifier la fréquence de fonctionnement de l'OS.
+
+\begin{lstlisting}[style=CStyle]
+    #define configTICK_RATE_HZ				( ( TickType_t ) 1000 )
+\end{lstlisting}
+
+Cette ligne définit le nombre de Ticks d'horloge par secondes envoyés par l'OS.
+Ici, la valeur associée est 1000, soit une fréquence de 1 kHz et 1000 Ticks/secondes.
+Modifier cette valeur permet de faire varier l'horloge envoyée par l'OS aux applications et donc de toute application qui tourne sur l'OS.
+C'est une possibilité pour faire varier la fréquence de clignotement de la LED, mais peu adaptée.\\
+
+Enfin, la dernière solution proposée est de modifier directement l'horloge source en provenance du microcontrôlleur.
+L'horloge de référence du micro peut également être modifiée dans le fichier FreeRTOSConfig.h, à la ligne suivante:
+
+\begin{lstlisting}[style=CStyle]
+    #define configCPU_CLOCK_HZ				(system_clock_source_get_hz( SYSTEM_CLOCK_SOURCE_OSC8M ))
+\end{lstlisting}
+
+Par défaut, c'est un oscillateur à 8 MHz qui est l'horloge de référence du CPU.
+Dans le fichier conf\_clocks.h, il est possible d'appliquer des facteurs de division d'horloge prédéfinis.
+
+\begin{lstlisting}[style=CStyle]
+#  define CONF_CLOCK_CPU_DIVIDER                  SYSTEM_MAIN_CLOCK_DIV_1
+...
+/* SYSTEM_CLOCK_SOURCE_OSC8M configuration - Internal 8MHz oscillator */
+#  define CONF_CLOCK_OSC8M_PRESCALER              SYSTEM_OSC8M_DIV_1
+
+\end{lstlisting}
+
+Ces facteurs de division (de 1 à 1024, A VERIFIER) divisent l'horloge avant qu'elle ne soit envoyé à l'OS par le CPU.
+Il est également possible de changer de source d'horloge en choisissant par exemple une horloge à 32 kHz.
+
+\begin{lstlisting}[style=CStyle]
+    #define configCPU_CLOCK_HZ				(system_clock_source_get_hz( SYSTEM_XOSC32K_STARTUP_65536 ))
+\end{lstlisting}
+
+Peu importe la méthode choisie pour modifier la fréquence du CPU, c'est une modification très risquée.
+En effet, il faut s'assurer au préalable que le taux d'occupation permet une telle modification; diminuer la fréquence du CPU, c'est augmenter le taux d'occupation et ralentir fortement les tâches, notamment dans le cas d'une division par un facteur 1048.
+Et même si cela est possible, il faut également s'assurer que l'horloge choisit permet d'assurer le nombre de Ticks/seconde définit pour l'OS.
+C'est donc une possibilité pour faire varier la fréquence de clignotement de la LED mais avec des conséquences non négligeables sur l'application.

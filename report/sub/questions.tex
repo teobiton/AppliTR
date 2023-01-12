@@ -1,16 +1,32 @@
 \section{Réponse aux questions}
 
-% Une analyse et des réponses aux questions posées par le paragraphe 3.5 (Etude du code de FreeRTOS)
+\subsection{Politique d'ordonnancement}
+Le rôle d'un ordonnanceur est de résoudre le problème de ressources partagées.
+Dans le cas d'un RTOS la ressource centrale est le(s) cœur(s) de processeur.
+La question étant, sur quels éléments se baser pour déterminer quelle tâche peut y accéder.
+Il existe un grand nombre de choix bien documenté dans la littérature.
+La politique implémentée dans FreeRTOS est l'ordonnancement préemptif à priorités fixes (Fixed priority pre-emptive scheduling).
+Dans le cas de priorité identique un round-robin est appliqué.
+Afin de s'approprier le code du noyau, il est demandé d'\textit{identifier la procédure en charge de la politique d’ordonnancement en faisant le lien avec les constantes définies dans le fichier FreeRTOSConfig.h.
+Quelle(s) procédure(s) faudrait-il modifier pour changer la politique ?}
+\gap
 
-Trouver dans le code, la procédure qui est en charge de la politique d’ordonancement.
-Pouvez-vous faire le lien avec les constantes définies dans le fichier
-FreeRTOSConfig.h ?
-
-
-Pouvez-vous facilement adapter la politique d’ordonnancement ? Quelle(s) procédure(s)
-faudrait-il modifier ?
-
-
+Les procédures liées à l'ordonnancement sont définies dans le fichier \texttt{task.c}.
+Parmi elles, on retrouve \texttt{vTaskSwitchContext()}.
+Qui, comme son nom l'indique, assure le changement de contexte des taches.
+Mais, avant de faire le changement effectif, elle doit identifier la tache la plus prioritaire.
+Le bloc de code suivant est extrait de la fonction.
+\begin{lstlisting}[style=CStyle]
+    /* Select a new task to run using either the generic C or port optimised asm code. */
+    taskSELECT_HIGHEST_PRIORITY_TASK();
+\end{lstlisting}
+Ainsi, pour être plus précis, c'est la macro \texttt{taskSELECT\_HIGHEST\_PRIORITY\_TASK} qui est en charge d'appliquer la politique de préemption à priorité fixe.
+Si on souhaite la changer il faut la remplacer.
+Dans le cas d'un système temps réel cela n'est pas simple car il faut probablement, pour atteindre de bonnes performances, écrire le code en assembleur.
+Il est toutefois, possible d'ajuster la politique avec les paramètres de configuration mis à disposition.
+En effet, il est possible de désactiver la préemption dans \texttt{config.h} avec \texttt{configUSE\_PREEMPTION}
+Aussi, les priorités dites fixes, car non modifié par le RTOS, sont en fait modifiable durant l'exécution.
+Cela aura pour résultat d'influencer la politique.
 
 \subsection{Gestion de la mémoire}
 Le noyau du RTOS a besoin de RAM chaque fois qu'une tâche, une file de message, un mutex, un délai logiciel, un sémaphore ou un groupe d'événements est créé. 
@@ -56,6 +72,7 @@ Le cinquième est dernier mode de gestion est le plus avancées mis à dispositi
 Il propose de la possibilité d'étendre le tas (heap) à travers plusieurs zones de mémoire non adjacentes.
 
 
+\subsection{Fréquence de clignotement}
 % La réponse à la question posée en fin du paragraphe 4.3.
 
-Comment faire varier la fréquence de clignotement de la LED ? (plusieurs possibilités)
+\textit{Comment faire varier la fréquence de clignotement de la LED ? (plusieurs possibilités)}

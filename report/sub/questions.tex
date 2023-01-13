@@ -1,6 +1,6 @@
 \section{Réponse aux questions}
 
-\subsection{Politique d'ordonnancement}
+\subsection{Politique d'ordonnancement} \label{ordonnancement}
 Le rôle d'un ordonnanceur est de résoudre le problème de ressources partagées.
 Dans le cas d'un RTOS la ressource centrale est le(s) cœur(s) de processeur.
 La question étant, sur quels éléments se baser pour déterminer quelle tâche peut y accéder.
@@ -79,10 +79,11 @@ Il propose de la possibilité d'étendre le tas (heap) à travers plusieurs zone
 \gap
 
 Il existe plusieurs façons de faire varier la fréquence de clignotement de la LED.
-Certaines solutions ont un impact uniquement sur le clignotement de LED dans la tâche "LEDControl" du programme mainLED\_BP.c donné en annexe.
+Certaines solutions ont un impact uniquement sur le clignotement de LED dans la tâche "LEDControl" du programme mainBlinkLED0.c donné en annexe \ref{led_blinking}.
 D'autres solutions ont un impact sur le fonctionnement générale du système.
 Elles seront donc classées de la plus simple (ou la plus "propre") à mettre en place à la moins judicieuse pour faire varier la fréquence de clignotement de la LED. \\
-La première solution consiste à ajouter un compteur dans la tâche "Clock" et de tester sa valeur, diminuant ainsi la fréquence d'envoi de la sémaphore à la tâche "LEDControl".
+Une première solution consiste à ajouter un compteur dans la tâche "BlinkLED" et à tester sa valeur.
+Cela permet de diviser la fréquence de clignotement de la LED.
 Une implémentation possible est celle-ci:
 
 \begin{lstlisting}[style=CStyle]
@@ -103,6 +104,42 @@ Une implémentation possible est celle-ci:
             }
         }
     }
+\end{lstlisting}
+
+Dans le même style, une solution consiste à ajouter un compteur dans la tâche "Clock", diminuant ainsi la fréquence d'envoi de la sémaphore à la tâche "LEDControl".
+Voici une implémentation possible:
+
+\begin{lstlisting}[style=CStyle]
+    void vCodeBlinkLED(void * pvParameters) 
+    { 
+        /* declaration de variables locales de la tache */ 
+        bool Blink;
+        uint8_t cpt = 0;
+        
+        /* initialisation des variables locales */ 
+        Blink = false;
+        
+            for (;;) 
+            { 
+                /* attente du semaphore d'eveil */ 
+                xSemaphoreTake(Sem, portMAX_DELAY); 
+                /* Cycle H*/ 
+                if (cpt == 1) {
+                    if (Blink == false) {
+                        /* turn LED on. */
+                        port_pin_set_output_level(LED_0_PIN, LED_0_ACTIVE);
+                        Blink = true;
+                    } else {
+                        /* turn LED off. */
+                        port_pin_set_output_level(LED_0_PIN, !LED_0_ACTIVE);
+                        Blink = false;
+                    }
+                    cpt = 0;
+                } else {
+                    cpt++;
+                }
+            } 
+    } 
 \end{lstlisting}
 
 Une deuxième solution consiste à faire varier la constante \textit{HORLOGE\_TASK\_DELAY}.
@@ -134,7 +171,7 @@ Une autre possibilité cette fois réside dans la modification de l'OS via le fi
 Dans ce fichier il est possible de modifier la fréquence de fonctionnement de l'OS.
 
 \begin{lstlisting}[style=CStyle]
-    #define configTICK_RATE_HZ				( ( TickType_t ) 1000 )
+#define configTICK_RATE_HZ		( ( TickType_t ) 1000 )
 \end{lstlisting}
 
 Cette ligne définit le nombre de Ticks d'horloge par secondes envoyés par l'OS.
@@ -146,17 +183,17 @@ Enfin, la dernière solution proposée est de modifier directement l'horloge sou
 L'horloge de référence du micro peut également être modifiée dans le fichier FreeRTOSConfig.h, à la ligne suivante:
 
 \begin{lstlisting}[style=CStyle]
-    #define configCPU_CLOCK_HZ				(system_clock_source_get_hz( SYSTEM_CLOCK_SOURCE_OSC8M ))
+#define configCPU_CLOCK_HZ		(system_clock_source_get_hz( SYSTEM_CLOCK_SOURCE_OSC8M ))
 \end{lstlisting}
 
 Par défaut, c'est un oscillateur à 8 MHz qui est l'horloge de référence du CPU.
 Dans le fichier conf\_clocks.h, il est possible d'appliquer des facteurs de division d'horloge prédéfinis.
 
 \begin{lstlisting}[style=CStyle]
-#  define CONF_CLOCK_CPU_DIVIDER                  SYSTEM_MAIN_CLOCK_DIV_1
+#  define CONF_CLOCK_CPU_DIVIDER		SYSTEM_MAIN_CLOCK_DIV_1
 ...
 /* SYSTEM_CLOCK_SOURCE_OSC8M configuration - Internal 8MHz oscillator */
-#  define CONF_CLOCK_OSC8M_PRESCALER              SYSTEM_OSC8M_DIV_1
+#  define CONF_CLOCK_OSC8M_PRESCALER		SYSTEM_OSC8M_DIV_1
 
 \end{lstlisting}
 
@@ -164,7 +201,7 @@ Ces facteurs de division (de 1 à 1024, A VERIFIER) divisent l'horloge avant qu'
 Il est également possible de changer de source d'horloge en choisissant par exemple une horloge à 32 kHz.
 
 \begin{lstlisting}[style=CStyle]
-    #define configCPU_CLOCK_HZ				(system_clock_source_get_hz( SYSTEM_XOSC32K_STARTUP_65536 ))
+#define configCPU_CLOCK_HZ		(system_clock_source_get_hz( SYSTEM_XOSC32K_STARTUP_65536 ))
 \end{lstlisting}
 
 Peu importe la méthode choisie pour modifier la fréquence du CPU, c'est une modification très risquée.

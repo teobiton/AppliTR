@@ -22,7 +22,7 @@ Plusieurs mesures de vitesse de réaction peuvent être effectuées afin d'obten
 Lorsque toutes les mesures ont été effectuées, des statistiques sont transmises à la fonction Affichage qui se charge de les afficher sur l'Ecran de la carte OLED1.
 La précision de la mesure du temps de réaction doit être de 1 ms.
 L'état de la fonction d'observation (Observe ou Non\_Observe) est en permanence affiché (variable Etat, matérialisée par LED0 de la carte SAMD21XPLAINEDPRO, la LED0 doit être allumée lorsqu'Etat a la valeur Observe).
-Le comportement de la fonction Observation est défini par l'automate de la figure 3.
+Le comportement de la fonction Observation est défini par l'automate de la figure \ref{fig:automate}.
 
 
 \subsection{Éléments de l'application}
@@ -99,7 +99,7 @@ Cette tâche a un comportement donné par l'automate suivant:
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.7\linewidth]{automate_obs.png}
+    \includegraphics[width=0.9\linewidth]{automate_obs.png}
     \caption{Automate de la tâche Observation}
     \label{fig:automate}
 \end{figure}
